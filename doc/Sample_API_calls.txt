@@ -1,0 +1,20 @@
+# sample command to create document
+curl -H "Content-Type: application/json" -X POST -d '{"Volume":1234, "Company":"Gavel Corp.", "Industry":"Food & Beverage", "Sector":"Hospitality", "Price":23.45}' http://localhost:8080/stocks/api/v1.0/createStock/GAV
+
+# sample command to read document
+curl http://localhost:8080/stocks/api/v1.0/getStock/GAV
+
+# sample command to update document
+curl -H "Content-Type: application/json" -X PUT -d '{"Volume":666}' http://localhost:8080/stocks/api/v1.0/updateStock/GAV
+
+# sample command to delete document
+curl -H "Content-Type: application/json" -X DELETE http://localhost:8080/stocks/api/v1.0/deleteStock/GAV
+
+# sample stock report
+curl -H "Content-Type: application/json" -X POST -d '{"list":["GAV", "SEV"]}' http://localhost:8080/stocks/api/v1.0/stockReport
+
+# sample industry report
+curl http://localhost:8080/stocks/api/v1.0/industryReport/Biotechnology
+
+# sample portfolio report
+curl http://localhost:8080/stocks/api/v1.0/portfolio/Facebook
