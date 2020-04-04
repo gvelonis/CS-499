@@ -23,17 +23,13 @@ for i in range(5):
 keys_sorted = sorted(roster.keys())
 print('ROSTER')
 for key in keys_sorted:
-
     print('Jersey number: %d, Rating: %d' % (key, roster[key]))
-
-
 
 ## this is the main while loop, prints the menu of commands then waits for user input
 ## repeats after each command until the user quits
 user_cmd = ''
 
 while user_cmd != 'q':
-
     print('\nMENU')
 
     print('a - Add player')
@@ -50,73 +46,67 @@ while user_cmd != 'q':
 
     print()
 
-
-    
 user_cmd = input('Choose an option: \n')
 
-    
+## uses the same logic as printing the roster at the beginning
+## code could be improved by moving it to a method and calling the method in both places
+## output roster
+if user_cmd == 'o':
 
-    ## uses the same logic as printing the roster at the beginning
-    ## code could be improved by moving it to a method and calling the method in both places
-    ## output roster
-    if user_cmd == 'o':
+    print('\nROSTER')
 
-        print('\nROSTER')
+    keys_sorted = sorted(roster.keys())
 
-        keys_sorted = sorted(roster.keys())
+    for key in keys_sorted:
+        print('Jersey number: %s, Rating: %d' % (key, roster[key]))
 
-        for key in keys_sorted:
 
+
+## add player to roster
+elif user_cmd == 'a':
+
+    jersey_num = int(input('Enter new player\'s jersey number: \n'))
+
+    player_rating = int(input('Enter new player\'s rating: \n\n'))
+
+    roster[jersey_num] = player_rating
+
+
+## remove player from roster
+
+elif user_cmd == 'd':
+
+    jersey_num = int(input('Enter a jersey number: '))
+
+    del roster[jersey_num]
+
+
+
+## update player rating
+## exactly the same code as add player. making it a different option is better for users
+## it allows for more clear verbiage and lets the user feel more in control
+elif user_cmd == 'u':
+
+    jersey_num = int(input('Enter a jersey number: '))
+
+    player_rating = int(input('Enter a new rating for player: '))
+
+    roster[jersey_num] = player_rating
+
+
+## prints all players above a certain rating
+## does not print players in any order. could be refactored to iterate over a sorted list of keys
+
+elif user_cmd == 'r':
+
+    rating_threshold = int(input('Enter a rating: '))
+
+    print('\nABOVE', rating_threshold)
+
+    for key in roster:
+
+        if roster[key] > rating_threshold:
             print('Jersey number: %s, Rating: %d' % (key, roster[key]))
-
-    
-
-    ## add player to roster
-    elif user_cmd == 'a':
-
-        jersey_num = int(input('Enter new player\'s jersey number: \n'))
-
-        player_rating = int(input('Enter new player\'s rating: \n\n'))
-
-        roster[jersey_num] = player_rating
-
-
-    ## remove player from roster
-
-    elif user_cmd == 'd':
-
-        jersey_num = int(input('Enter a jersey number: '))
-
-        del roster[jersey_num]
-
-
-
-    ## update player rating
-    ## exactly the same code as add player. making it a different option is better for users
-    ## it allows for more clear verbiage and lets the user feel more in control
-    elif user_cmd == 'u':
-
-        jersey_num = int(input('Enter a jersey number: '))
-
-        player_rating = int(input('Enter a new rating for player: '))
-
-        roster[jersey_num] = player_rating
-   
-
-    ## prints all players above a certain rating
-    ## does not print players in any order. could be refactored to iterate over a sorted list of keys
-
-    elif user_cmd == 'r':
-
-        rating_threshold = int(input('Enter a rating: '))
-
-        print('\nABOVE', rating_threshold)
-
-        for key in roster:
-
-            if roster[key] > rating_threshold:
-
-                print('Jersey number: %s, Rating: %d' % (key, roster[key]))
 
 ## best practices used include proper use of white space between logical sections of code
 ## code comments explaining why the decisions were made to use data types
