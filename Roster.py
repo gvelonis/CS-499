@@ -1,3 +1,5 @@
+##!/usr/bin/python3
+
 ###################################
 #          George Velonis         #
 #          SNHU, CS-499           #
@@ -5,63 +7,58 @@
 #           April 4, 2020         #
 ###################################
 
-
-# define class for each linked list node
-class Node:
-    def __init__(self):
-        self.prev_node = None
-        self.next_node = None
+from lib.DLinkedList import DLinkedList
 
 
-# define node child class to represent each player
-class Player(Node):
+# define class to represent each player
+# will be the payload of the node
+class Player:
+    # all data required to initialize a new player
     def __init__(self, name, position, jersey_num, player_rating):
-        Node.__init__(self)
         self.name = name
         self.position = position
         self.jersey_num = jersey_num
         self.player_rating = player_rating
 
+    # returns a string representation of the player
     def __str__(self):
         string = 'Name: %s, Position: %s, Number: %d, Rating: %d' % (
             self.name, self.position, self.jersey_num, self.player_rating)
         return string
 
-
-# define the class for the linked list
-class LinkedList:
-    def __init__(self):
-        self.head = None
-        self.tail = None
-
-    def add_node(self, node):
-        # if head is None, list is empty and node should be both head and tail
-        if self.head is None:
-            self.head = node
-            self.tail = node
-            return
-        # otherwise, set current tail's next to the new node, the new node's previous to current tail
-        # then update current tail to the new node
-        self.tail.next_node = node
-        node.prev_node = self.tail
-        self.tail = node
-
-    def __iter__(self):
-        cursor = self.head
-        while cursor is not None:
-            node = cursor
-            cursor = cursor.next_node
-            yield node
+    # ensures that player rating is between 0 and 100
+    def __setattr__(self, key, value):
+        if (key == 'player_rating') and (not (0 <= value <= 100)):
+            raise ValueError("Player rating must be between 0 and 100, inclusive")
+        else:
+            self.__dict__[key] = value
 
 
 # roster class
-class Roster(LinkedList):
+class Roster(DLinkedList):
     def __init__(self):
-        LinkedList.__init__(self)
+        DLinkedList.__init__(self)
 
+    def __iter__(self):
+        for node in DLinkedList.__iter__(self):
+            yield node.data
+
+    # adds a new player to the roster
+    # argument is a Player object
     def add_player(self, new_player):
-        LinkedList.add_node(self, new_player)
+        DLinkedList._add_node(self, new_player)
 
+    def add_player_head(self, new_player):
+        DLinkedList._add_node_head(self, new_player)
+
+    def insert_player(self, index_player, new_player):
+        # iterate through nodes until finding matching index data
+        for node in DLinkedList.__iter__(self):
+            if node.data == index_player:
+                DLinkedList._insert_node(node, new_player)
+
+    # adds a new player to the roster
+    # prompts the user for the player's data
     def add_interactive(self):
         name = input('Enter player\'s name: ')
         position = input('Enter player\'s position: ')
@@ -70,57 +67,121 @@ class Roster(LinkedList):
         new_player = Player(name, position, jersey_num, player_rating)
         self.add_player(new_player)
 
+    # removes a player
+    # argument is an integer to match jersey_num to
     def remove_player(self, jersey_num):
-        for cursor in self:
-            if cursor.jersey_num == jersey_num:
-                cursor.prev_node.next_node = cursor.next_node
-                cursor.next_node.prev_node = cursor.prev_node
+        for player in self:
+            if player.jersey_num == jersey_num:
+                DLinkedList._remove_node(self, player)
 
+    # updates player rating
+    # first argument is jersey_num to match to
+    # second argument is new rating to set
     def update_rating(self, jersey_num, rating):
         for cursor in self:
             if cursor.jersey_num == jersey_num:
                 cursor.player_rating = rating
 
+    # prints the current roster
+    # optionally set a min and max rating
     def print(self, max_rating=100, min_rating=0):
         print('ROSTER:')
         for cursor in self:
             if min_rating <= cursor.player_rating <= max_rating:
                 print(cursor)
 
-    # TODO: implement sorting functions
+    # bubble sort for sorting by name
     def sort_alpha(self):
-        pass
+        swapped = True
 
+        # empty lists (head and tail are None) or length 1 (head and tail are equal) are already sorted
+        if self.head == self.tail:
+            return
+
+        while swapped:
+            swapped = False
+            node = self.head
+
+            while node.next is not None:
+                if node.data.name > node.next.data.name:
+                    DLinkedList._swap_node(self, node)
+                    swapped = True
+                node = node.next
+
+    # bubble sort for sorting by position
     def sort_position(self):
-        pass
+        swapped = True
 
+        # empty lists (head and tail are None) or length 1 (head and tail are equal) are already sorted
+        if self.head == self.tail:
+            return
+
+        while swapped:
+            swapped = False
+            node = self.head
+
+            while node.next is not None:
+                if node.data.position > node.next.data.position:
+                    DLinkedList._swap_node(self, node)
+                    swapped = True
+                node = node.next
+
+    # insertion sort algorithm for sorting jersey numbers
     def sort_jersey(self):
-        pass
+        # empty lists (head and tail are None) or length 1 (head and tail are equal) are already sorted
+        if self.head == self.tail:
+            return
 
+        sorted_roster = Roster()
+
+        for unsorted_player in self:
+            # if sorted head is empty, just add this player
+            if sorted_roster.head is None:
+                sorted_roster.add_player(unsorted_player)
+            # if this player goes before current head
+            elif unsorted_player.jersey_num < sorted_roster.head.data.jersey_num:
+                sorted_roster.add_player_head(unsorted_player)
+            # if this player goes after current tail
+            elif unsorted_player.jersey_num > sorted_roster.tail.data.jersey_num:
+                sorted_roster.add_player(unsorted_player)
+            # otherwise this player is inserted somewhere in between
+            # iterate through current sorted list until we find insertion point
+            else:
+                for sorted_player in sorted_roster:
+                    if unsorted_player.jersey_num < sorted_player.jersey_num:
+                        sorted_roster.insert_player(sorted_player, unsorted_player)
+                        break
+        return sorted_roster
+
+    # bubble sort for sorting by rating
     def sort_rating(self):
-        pass
+        swapped = True
+
+        # empty lists (head and tail are None) or length 1 (head and tail are equal) are already sorted
+        if self.head == self.tail:
+            return
+
+        while swapped:
+            swapped = False
+            node = self.head
+
+            while node.next is not None:
+                if node.data.player_rating < node.next.data.player_rating:
+                    DLinkedList._swap_node(self, node)
+                    swapped = True
+                node = node.next
 
 
 if __name__ == '__main__':
     # initialize roster LL
     roster = Roster()
 
-    # program requires initial input of 5 players
-    # statically define initial 5 for testing
-    player = Player('Bergie', 'C', 33, 99)
-    roster.add_node(player)
-    player = Player('Marchand', 'W', 26, 92)
-    roster.add_node(player)
-    player = Player('Warren', 'W', 18, 78)
-    roster.add_node(player)
-    player = Player('Chara', 'D', 72, 95)
-    roster.add_node(player)
-    player = Player('McDonnel', 'D', 88, 78)
-    roster.add_node(player)
-
-    # iterate through adding players to roster
-    # for i in range(5):
-    #     roster.add_interactive()
+    # initial input of 5 players
+    roster.add_player(Player('Bergie', 'C', 33, 99))
+    roster.add_player(Player('Marchand', 'W', 26, 92))
+    roster.add_player(Player('Warren', 'W', 18, 78))
+    roster.add_player(Player('Chara', 'D', 72, 95))
+    roster.add_player(Player('McDonnel', 'D', 88, 78))
 
     roster.print()
 
@@ -134,6 +195,10 @@ if __name__ == '__main__':
         print('u - Update player rating')
         print('r - Output players above a rating')
         print('o - Output roster')
+        print('sa - Sort roster by name')
+        print('sp - Sort roster by position')
+        print('sj - Sort roster by jersey number')
+        print('sr - Sort roster by rating')
         print('q - Quit')
         print()
 
@@ -159,7 +224,22 @@ if __name__ == '__main__':
             roster.update_rating(player_num, new_rating)
 
         # prints all players above a certain rating
-        # does not print players in any order. could be refactored to iterate over a sorted list of keys
         elif user_cmd == 'r':
             rating_threshold = int(input('Enter a rating: '))
             roster.print(100, rating_threshold)
+
+        # resorts the roster according to player rating
+        elif user_cmd == 'sr':
+            roster.sort_rating()
+
+        # resorts the roster according to jersey number
+        elif user_cmd == 'sj':
+            roster = roster.sort_jersey()
+
+        # resorts the roster according to name
+        elif user_cmd == 'sa':
+            roster.sort_alpha()
+
+        # resorts the roster according to position
+        elif user_cmd == 'sp':
+            roster.sort_position()
