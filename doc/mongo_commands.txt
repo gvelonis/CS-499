@@ -1,0 +1,24 @@
+use admin
+
+db.createUser( {
+    user: "dba",
+    pwd: "dba",
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" },
+            "readWriteAnyDatabase",
+            "dbAdminAnyDatabase"
+            ]
+} )
+
+use market
+
+db.createUser( {
+    user: "MarketAPI",
+    pwd: "MarketAPI",
+    roles: [ "readWrite" ]
+} )
+
+db.createUser( {
+    user: "MarketCLI",
+    pwd: "MarketCLI",
+    roles: [ "readWrite" ]
+} )

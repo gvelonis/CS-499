@@ -11,7 +11,7 @@ from bottle import route, run, request, response
 def post_create(ticker):
     req = json.loads(json.dumps(request.json, indent=4, default=json_util.default))
     req["Ticker"] = ticker
-    if marketdb.stocks_coll.create_doc(req):
+    if marketdb.insert_stock(req):
         response.status = '201 Created'
     else:
         req = {}
@@ -22,7 +22,7 @@ def post_create(ticker):
 # method to return full stock document based on ticker
 @route('/stocks/api/v1.0/getStock/<ticker>', method='GET')
 def get_read(ticker):
-    result = marketdb.stocks_coll.read_doc({"Ticker": ticker})
+    result = marketdb.read_stock(ticker)
     for r in result:
         response.status = '200 OK'
         return json.loads(json.dumps(r, indent=4, default=json_util.default))
@@ -34,11 +34,10 @@ def get_read(ticker):
 # method to update stock document
 @route('/stocks/api/v1.0/updateStock/<ticker>', method='PUT')
 def get_update(ticker):
-    query = {"Ticker": ticker}
     new_value = request.json
-    if marketdb.stocks_coll.update_doc(query, new_value):
+    if marketdb.update_stock(ticker, new_value):
         response.status = '201 Created'
-        result = marketdb.stocks_coll.read_doc(query)
+        result = marketdb.read_stock(ticker)
         for r in result:
             return json.loads(json.dumps(r, indent=4, default=json_util.default))
     else:
@@ -52,8 +51,7 @@ def get_update(ticker):
 # method to delete stock document
 @route('/stocks/api/v1.0/deleteStock/<ticker>', method='DELETE')
 def get_delete(ticker):
-    query = {"Ticker": ticker}
-    if marketdb.stocks_coll.delete_doc(query):
+    if marketdb.delete_stock(ticker):
         response.status = '200 OK'
     else:
         response.status = '404 Not Found'
@@ -64,9 +62,9 @@ def get_delete(ticker):
 @route('/stocks/api/v1.0/stockReport', method='POST')
 def stock_report():
     req = json.loads(json.dumps(request.json, indent=4, default=json_util.default))
-    stocklist = req["list"]
+    stock_list = req["list"]
     result = []
-    for ticker in stocklist:
+    for ticker in stock_list:
         for summary in marketdb.read_summary(ticker):
             result.append(summary)
     if len(result) == 0:
@@ -80,7 +78,7 @@ def stock_report():
 # method to get a list of summary data from companies in a given industry
 @route('/stocks/api/v1.0/industryReport/<industry>', method='GET')
 def industry_report(industry):
-    result = marketdb.read_industryreport(industry)
+    result = marketdb.read_industry_report(industry)
     if len(result) == 0:
         response.status = '404 Not Found'
         return
@@ -91,7 +89,7 @@ def industry_report(industry):
 # method to funding information for a given company
 @route('/stocks/api/v1.0/portfolio/<company>', method='GET')
 def get_portfolio(company):
-    result = marketdb.companies_coll.read_doc({"name": company}, {"_id": False, "name": 1, "investments": 1})
+    result = marketdb.read_portfolio(company)
     portfolio = []
     for doc in result:
         portfolio.append(doc)
@@ -104,7 +102,7 @@ def get_portfolio(company):
 # MAIN
 if __name__ == '__main__':
     # initialize MongoIfc instance
-    marketdb = MarketDbIfc()
+    marketdb = MarketDbIfc('MarketAPI', 'MarketAPI')
 
     # start listening for connections
     run(host='localhost', port=8080)

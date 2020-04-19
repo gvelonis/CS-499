@@ -1,3 +1,8 @@
+Prerequisites:
+mongod instance running on localhost
+access control enabled
+dba:dba in "admin" with roles "userAdminAnyDatabase", "readWriteAnyDatabase" and "dbAdminAnyDatabase"
+
 Run scripts/init_mongo.sh to:
 1) Drop/recreate market database
 2) create unique index on ticker for stocks
