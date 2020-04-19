@@ -6,7 +6,7 @@ from pprint import pprint
 # MAIN
 if __name__ == '__main__':
     # initialize MongoIfc instance
-    marketdb = MarketDbIfc()
+    marketdb = MarketDbIfc('MarketCLI', 'MarketCLI')
 
     action = ""
     # main menu loop
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         elif action == "u":
             ticker = input("Enter Ticker to update: ")
             volume = input("Enter new value for Volume ")
-            if marketdb.update_stock(ticker, volume):
+            if marketdb.update_volume(ticker, volume):
                 print("Update successful.\n")
             else:
                 print("Update failed.\n")
